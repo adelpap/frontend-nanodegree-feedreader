@@ -8,65 +8,98 @@
  * since some of these tests may require DOM elements. We want
  * to ensure they don't run until the DOM is ready.
  */
+
 $(function() {
-    /* This is our first test suite - a test suite just contains
-    * a related set of tests. This suite is all about the RSS
-    * feeds definitions, the allFeeds variable in our application.
-    */
+
+    //  test suite for the RSS feeds
     describe('RSS Feeds', function() {
-        /* This is our first test - it tests to make sure that the
-         * allFeeds variable has been defined and that it is not
-         * empty. Experiment with this before you get started on
-         * the rest of this project. What happens when you change
-         * allFeeds in app.js to be an empty array and refresh the
-         * page?
-         */
+        // checks if all feeds are defined and not empty
         it('are defined', function() {
             expect(allFeeds).toBeDefined();
             expect(allFeeds.length).not.toBe(0);
         });
 
+        // checks if all the feeds have defined and not empty URLs
+        it('have defined urls', function() {
+            for (const feed of allFeeds) {
+                expect(feed.url).toBeDefined();
+                expect(feed.url.length).not.toBe(0);
+            }
+        });
 
-        /* TODO: Write a test that loops through each feed
-         * in the allFeeds object and ensures it has a URL defined
-         * and that the URL is not empty.
-         */
-
-
-        /* TODO: Write a test that loops through each feed
-         * in the allFeeds object and ensures it has a name defined
-         * and that the name is not empty.
-         */
+        // checks if all feeds have a not empty and defined name
+        it('have defined names', function() {
+            for(const feed of allFeeds) {
+                expect(feed.name).toBeDefined();
+                expect(feed.name.length).not.toBe(0);
+            }
+        });
     });
 
+    // test suite that checks the menu functionality
+    describe('The menu', function() {
+        const body = document.querySelector('body');
 
-    /* TODO: Write a new test suite named "The menu" */
+        // checks if the menu is hidded by default
+        // it expects the body element to have the menu-hidden class
+        // since this class is hiding it
+        it('is hidden by default', function() {
+            expect(body).toHaveClass('menu-hidden');
+        });
 
-        /* TODO: Write a test that ensures the menu element is
-         * hidden by default. You'll have to analyze the HTML and
-         * the CSS to determine how we're performing the
-         * hiding/showing of the menu element.
-         */
+        // checks if by clicking the menu it changes visibility
+        it('changes visibility when menu icon is clicked', function() {
+            const menuIcon = document.querySelector('.menu-icon-link');
+            const body = document.querySelector('body');
 
-         /* TODO: Write a test that ensures the menu changes
-          * visibility when the menu icon is clicked. This test
-          * should have two expectations: does the menu display when
-          * clicked and does it hide when clicked again.
-          */
+            // we click the menu icon here and expect the menu to appear
+            menuIcon.click();
+            expect(body).not.toHaveClass('menu-hidden');
 
-    /* TODO: Write a new test suite named "Initial Entries" */
+            // we click the menu icon again and expect the menu to hide
+            menuIcon.click();
+            expect(body).toHaveClass('menu-hidden');
+        });
+    });
 
-        /* TODO: Write a test that ensures when the loadFeed
-         * function is called and completes its work, there is at least
-         * a single .entry element within the .feed container.
-         * Remember, loadFeed() is asynchronous so this test will require
-         * the use of Jasmine's beforeEach and asynchronous done() function.
-         */
+    // test suite that checks the initial entries of the feed container after the loadFeed function is called
+    describe('Initial Entries', function() {
+        // we need to run the loadFeed function before we can check for the feed enrtries
+        // the loadFeed function is asynchronous so we have to use beforeEach() and done() functions
+        // to let it run and finish its run before we do the checking
+        beforeEach(function(done) {
+            // done is passed in loadFeed since loadFeed supports a callback as the second parameter
+            // which will be called after everything has run successfully.
+            loadFeed(0, done);
+        });
 
-    /* TODO: Write a new test suite named "New Feed Selection" */
+        // checks if the feed container has at least one entry
+        it('should have at least a single entry', function() {
+            const feedEntries = document.querySelectorAll('.feed .entry');
+            console.log(feedEntries);
+            expect(feedEntries).not.toBe(0);
+        });
+    });
 
-        /* TODO: Write a test that ensures when a new feed is loaded
-         * by the loadFeed function that the content actually changes.
-         * Remember, loadFeed() is asynchronous.
-         */
+    // test suite that checks if the feed is changing when we call loadFeed() more than once
+    describe('New Feed Selection', function() {
+        let initialFeed;
+
+        // again we use beforeEach() and done() because loadFeed is asynchronous
+        beforeEach(function(done) {
+            // we call loadFeed and get an initial feed
+            loadFeed(0);
+            firstFeed = document.querySelector('.feed').textContent;
+            // then we call loadFeed again with a different parameter and let it be done
+            loadFeed(1, done);
+        });
+
+        // checks if the feed has changed content after we have ran loadFeed() twice
+        it('changes content', function() {
+            // we get the new feed and check if it has the same content as the initial one
+            const newFeed = document.querySelector('.feed').textContent;
+            expect(firstFeed).not.toBe(newFeed);
+        });
+    });
+
 }());
